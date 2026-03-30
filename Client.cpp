@@ -8,10 +8,11 @@ Client::Client(int id, Server& server) : id(id), server(server) {
 
 Client::~Client() {}
 
-void Client::sendData(const std::string& data) {
-    Logger::log("Client " + std::to_string(id) + " sending data...");
-    Packet packet(id, data);
-    server.receivePacket(packet);
+void Client::sendRequest(const std::string& request) {
+    Logger::log("Client " + std::to_string(id) + " sending request: " + request);
+    // Use the 3 arg Packet constructor we pulled from remote
+    Packet packet(1, 1, request); 
+    server.processRequest(packet);
 }
 
 int Client::getId() const {

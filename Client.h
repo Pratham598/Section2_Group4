@@ -11,7 +11,7 @@ public:
     Client(int id, Server& server);
     ~Client();
 
-    void sendData(const std::string& data);
+    void sendRequest(const std::string& request);
     int getId() const;
 
 private:
