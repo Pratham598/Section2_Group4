@@ -5,15 +5,18 @@
 
 class Packet {
 public:
-    Packet(int id, const std::string& data);
-    ~Packet();
+    int packetType;
+    int sequenceNumber;
+    int payloadSize;
+    std::string payload;
 
-    int getId() const;
-    std::string getData() const;
+    // Constructors
+    Packet();
+    Packet(int type, int seqNum, const std::string& data);
 
-private:
-    int id;
-    std::string data;
+    // Core functionality
+    std::string encode() const;
+    void decode(const std::string& data);
 };
 
 #endif // PACKET_H
