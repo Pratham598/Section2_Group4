@@ -15,7 +15,7 @@ public:
     ~Server();
 
     bool authenticateUser(const std::string& username, const std::string& password);
-    std::string processRequest(const Packet& p);
+    Packet processRequest(const Packet& p);
     void manageState();
 
 private:

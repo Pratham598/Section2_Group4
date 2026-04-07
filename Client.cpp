@@ -37,17 +37,18 @@ void Client::selectCamera() {
 void Client::sendRequest(const std::string& requestStr) {
     Logger::log("Client " + username + " sending request: " + requestStr);
     
-    // Create Packet object to send requests
-    Packet packet(1, 1, requestStr); 
+    // Create Packet object to send requests (type 1 for client request)
+    static int sequenceNumber = 1;
+    Packet requestPacket(1, sequenceNumber++, requestStr); 
     
-    // Send request to Server and receive response
-    std::string response = server.processRequest(packet);
-    receiveResponse(response);
+    // Send request to Server and receive response Packet
+    Packet responsePacket = server.processRequest(requestPacket);
+    receiveResponse(responsePacket);
 }
 
-void Client::receiveResponse(const std::string& response) {
-    Logger::log("Client " + username + " received response: " + response);
-    std::cout << "[Client] Server Response: " << response << "\n";
+void Client::receiveResponse(const Packet& response) {
+    Logger::log("Client " + username + " received response: " + response.payload);
+    std::cout << "[Client] Server Response (Type " << response.packetType << "): " << response.payload << "\n";
 }
 
 void Client::menu() {

@@ -18,46 +18,48 @@ bool Server::authenticateUser(const std::string& username, const std::string& pa
     return false;
 }
 
-std::string Server::processRequest(const Packet& p) {
+Packet Server::processRequest(const Packet& p) {
     if (!isAuthenticated) {
         Logger::log("Unauthorized request. Please authenticate first.");
-        return "Unauthorized request.";
+        return Packet(2, p.sequenceNumber, "Unauthorized request.");
     }
 
     std::string request = p.payload;
     Logger::log("Processing request: " + request);
-    std::string response;
+    std::string responseStr;
 
     if (request == "START_MONITOR") {
         if (currentState == ServerState::IDLE) {
             currentState = ServerState::MONITORING;
-            response = "Server state changed to MONITORING.";
+            responseStr = "Server state changed to MONITORING.";
         } else {
-            response = "Server is already monitoring.";
+            responseStr = "Server is already monitoring.";
         }
     } else if (request == "STOP_MONITOR") {
         if (currentState == ServerState::MONITORING) {
             currentState = ServerState::IDLE;
-            response = "Server state changed to IDLE.";
+            responseStr = "Server state changed to IDLE.";
         } else {
-            response = "Server is already idle.";
+            responseStr = "Server is already idle.";
         }
     } else if (request == "GET_SNAPSHOT") {
         if (currentState == ServerState::MONITORING) {
-            response = "Snapshot transfer complete.";
+            responseStr = "Snapshot transfer complete.";
         } else {
-            response = "Cannot get snapshot. Server is not in MONITORING state.";
+            responseStr = "Cannot get snapshot. Server is not in MONITORING state.";
         }
     } else if (request.length() >= 7 && request.substr(0, 7) == "CAMERA_") {
         currentState = ServerState::MONITORING;
-        response = request + "_STREAM_START";
+        responseStr = request + "_STREAM_START";
     } else {
-        response = "Unknown request: " + request;
+        responseStr = "Unknown request: " + request;
     }
 
     manageState();
-    Logger::log("[RESPONSE] " + response);
-    return response;
+    Logger::log("[RESPONSE] " + responseStr);
+    
+    // Return a response packet (type 2 to denote server response)
+    return Packet(2, p.sequenceNumber, responseStr);
 }
 
 void Server::manageState() {

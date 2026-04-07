@@ -16,7 +16,7 @@ public:
     void login();
     void selectCamera();
     void sendRequest(const std::string& requestStr);
-    void receiveResponse(const std::string& response);
+    void receiveResponse(const Packet& response);
     
     // Menu
     void menu();
