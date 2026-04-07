@@ -1,11 +1,13 @@
 # Traffic Monitoring System - Test Cases
 
-Below are 5 test cases for the C++ traffic monitoring system based on the `Packet`, `Server`, and `Client` classes.
+Below are the validated tests specifically covering the login, state transitions, snapshots, and error handling of the Server.
 
-| Test Case Name | Input | Expected Output | Actual Output | Result (Pass/Fail) |
+| Test Case | Input / Action | Expected Output | Actual Output | Result |
 | :--- | :--- | :--- | :--- | :--- |
-| **Packet Encoding** | `type=1`, `seqNum=100`, `data="Test"` passed to `Packet` constructor. Then calling `encode()`. | Encoded string matching format (e.g., `"1|100|4|Test"`) | Successfully encoded string `"1|100|4|Test"` | **Pass** |
-| **Packet Decoding** | Calling `decode("2|50|6|Status")` | Packet sets `packetType=2`, `seqNum=50`, `payload="Status"` | Object internal variables match expected values | **Pass** |
-| **Valid Server Auth** | `authenticateUser("admin", "password123")` | Returns `true` and sets `isAuthenticated` to true | `true` | **Pass** |
-| **Invalid Server Auth**| `authenticateUser("hacker", "wrongpass")` | Returns `false` and blocks further monitoring requests | `false` | **Pass** |
-| **Client Camera Request** | Client calling `sendRequest("CAMERA_1")` when authenticated | Server transitions to `MONITORING` and sends confirmation | Response `"CAMERA_1_STREAM_START"` received by Client | **Pass** |
+| **Login Success** | `authenticateUser("admin", "password123")` | Returns `true`; server `isAuthenticated` becomes true | `true` | **Pass** |
+| **Login Failure** | `authenticateUser("hacker", "badpass")` | Returns `false`; blocks all subsequent packet requests | `false` | **Pass** |
+| **State Transition (Start)** | `START_MONITOR` packet sent while IDLE | State becomes `MONITORING`; Returns `"Server state changed to MONITORING."` | Successfully transitioned state and returned confirmation | **Pass** |
+| **State Transition (Stop)** | `STOP_MONITOR` packet sent while MONITORING | State reverts to `IDLE`; Returns `"Server state changed to IDLE."` | Successfully transitioned state and returned confirmation | **Pass** |
+| **Snapshot Request** | `GET_SNAPSHOT` packet sent while MONITORING | Image separated into chunks (`CHUNK:1/3:`, etc.) sent across 3 packets | 3 valid packets generated representing 1.5MB mocked image | **Pass** |
+| **Invalid State Command** | `GET_SNAPSHOT` packet sent while IDLE | Returns error rejecting the action since cameras aren't active | `"Error: Rejected invalid action 'GET_SNAPSHOT' in IDLE state."` | **Pass** |
+| **Invalid Unknown Command** | `HACK_SYSTEM` packet sent | Returns unknown request error | `"Error: Unknown request 'HACK_SYSTEM'."` | **Pass** |
