@@ -18,56 +18,73 @@ bool Server::authenticateUser(const std::string& username, const std::string& pa
     return false;
 }
 
-Packet Server::processRequest(const Packet& p) {
+std::vector<Packet> Server::processRequest(const Packet& p) {
     Logger::logPacket("REQ", p);
+    std::vector<Packet> responses;
     
     if (!isAuthenticated) {
         Logger::log("Unauthorized request. Please authenticate first.");
         Packet response(2, p.sequenceNumber, "Unauthorized request.");
         Logger::logPacket("RES", response);
-        return response;
+        responses.push_back(response);
+        return responses;
     }
 
     std::string request = p.payload;
     Logger::log("Processing request: " + request);
-    std::string responseStr;
 
     // State Machine Implementation
     switch (currentState) {
         case ServerState::IDLE:
             if (request == "START_MONITOR") {
                 currentState = ServerState::MONITORING;
-                responseStr = "Server state changed to MONITORING.";
+                responses.push_back(Packet(2, p.sequenceNumber, "Server state changed to MONITORING."));
             } else if (request == "STOP_MONITOR" || request == "GET_SNAPSHOT") {
-                responseStr = "Error: Rejected invalid action '" + request + "' in IDLE state.";
+                responses.push_back(Packet(2, p.sequenceNumber, "Error: Rejected invalid action '" + request + "' in IDLE state."));
             } else {
-                responseStr = "Error: Unknown request '" + request + "'.";
+                responses.push_back(Packet(2, p.sequenceNumber, "Error: Unknown request '" + request + "'."));
             }
             break;
 
         case ServerState::MONITORING:
             if (request == "STOP_MONITOR") {
                 currentState = ServerState::IDLE;
-                responseStr = "Server state changed to IDLE.";
+                responses.push_back(Packet(2, p.sequenceNumber, "Server state changed to IDLE."));
             } else if (request == "START_MONITOR") {
-                responseStr = "Error: Rejected invalid action. Server is already MONITORING.";
+                responses.push_back(Packet(2, p.sequenceNumber, "Error: Rejected invalid action. Server is already MONITORING."));
             } else if (request == "GET_SNAPSHOT") {
-                responseStr = "Snapshot transfer complete.";
+                // Simulate large image (>1MB)
+                std::string largeImg(1500000, 'X'); // 1.5MB of 'X'
+                size_t chunkSize = 500000;
+                int totalChunks = (largeImg.size() + chunkSize - 1) / chunkSize;
+                for (int i = 0; i < totalChunks; ++i) {
+                    std::string chunk = largeImg.substr(i * chunkSize, chunkSize);
+                    std::string chunkPrefix = "CHUNK:" + std::to_string(i+1) + "/" + std::to_string(totalChunks) + ":";
+                    responses.push_back(Packet(2, p.sequenceNumber + i, chunkPrefix + chunk));
+                }
             } else if (request.length() >= 7 && request.substr(0, 7) == "CAMERA_") {
-                responseStr = request + "_STREAM_START";
+                responses.push_back(Packet(2, p.sequenceNumber, request + "_STREAM_START"));
             } else {
-                responseStr = "Error: Unknown request '" + request + "'.";
+                responses.push_back(Packet(2, p.sequenceNumber, "Error: Unknown request '" + request + "'."));
             }
             break;
     }
 
     manageState(); // Prints current state for debugging
-    Logger::log("[RESPONSE] " + responseStr);
     
-    // Return a response packet (type 2 to denote server response)
-    Packet response(2, p.sequenceNumber, responseStr);
-    Logger::logPacket("RES", response);
-    return response;
+    for (size_t i = 0; i < responses.size(); ++i) {
+        std::string logPayload = responses[i].payload;
+        if (logPayload.length() > 60) {
+            logPayload = logPayload.substr(0, 60) + "... [TRUNCATED FOR LOGGING]";
+        }
+        Logger::log("[RESPONSE " + std::to_string(i+1) + "/" + std::to_string(responses.size()) + "] " + logPayload);
+        
+        Packet briefRes = responses[i];
+        briefRes.payload = logPayload;
+        Logger::logPacket("RES", briefRes);
+    }
+    
+    return responses;
 }
 
 void Server::manageState() {

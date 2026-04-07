@@ -4,6 +4,8 @@
 #include "Packet.h"
 #include <string>
 
+#include <vector>
+
 enum class ServerState {
     IDLE,
     MONITORING
@@ -15,7 +17,7 @@ public:
     ~Server();
 
     bool authenticateUser(const std::string& username, const std::string& password);
-    Packet processRequest(const Packet& p);
+    std::vector<Packet> processRequest(const Packet& p);
     void manageState();
 
 private:

@@ -26,14 +26,40 @@ void Client::sendRequest(const std::string& requestStr) {
     static int sequenceNumber = 1;
     Packet requestPacket(1, sequenceNumber++, requestStr); 
     
-    // Send request to Server and receive response Packet
-    Packet responsePacket = server.processRequest(requestPacket);
-    receiveResponse(responsePacket);
+    // Send request to Server and receive response Packets
+    std::vector<Packet> responsePackets = server.processRequest(requestPacket);
+    
+    std::string assembledSnapshot = "";
+    
+    for (const auto& responsePacket : responsePackets) {
+        std::string payload = responsePacket.payload;
+        
+        if (payload.length() >= 6 && payload.substr(0, 6) == "CHUNK:") {
+            // Parse chunk header. Format: CHUNK:<index>/<total>:<data>
+            size_t headerEnd = payload.find(':', 6);
+            if (headerEnd != std::string::npos) {
+                assembledSnapshot += payload.substr(headerEnd + 1);
+            }
+        } else {
+            receiveResponse(responsePacket);
+        }
+    }
+    
+    if (!assembledSnapshot.empty()) {
+        // Create a summary packet to indicate successful assembly without overwhelming the console
+        std::string summary = "Snapshot fully assembled (" + std::to_string(assembledSnapshot.size()) + " simulated bytes).";
+        Packet summaryPacket(2, requestPacket.sequenceNumber, summary);
+        receiveResponse(summaryPacket);
+    }
 }
 
 void Client::receiveResponse(const Packet& response) {
-    Logger::log("Client " + username + " received response: " + response.payload);
-    std::cout << "    >> Server: " << response.payload << "\n";
+    std::string logPayload = response.payload;
+    if (logPayload.length() > 60) {
+        logPayload = logPayload.substr(0, 60) + "... [TRUNCATED]";
+    }
+    Logger::log("Client " + username + " received response: " + logPayload);
+    std::cout << "    >> Server: " << logPayload << "\n";
 }
 
 void Client::menu() {
