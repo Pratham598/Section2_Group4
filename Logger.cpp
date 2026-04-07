@@ -51,3 +51,10 @@ void Logger::writeToFile() {
         std::cerr << "Error: Unable to open log file (" << filename << ") for writing." << std::endl;
     }
 }
+
+void Logger::log(const std::string& msg) {
+    // Create a temporary logger to print out the static logs instead of losing them
+    static Logger sysLogger("system_log.txt");
+    sysLogger.logMessage(msg);
+    sysLogger.writeToFile();
+}

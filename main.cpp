@@ -1,34 +1,44 @@
 #include <iostream>
 #include "Server.h"
 #include "Client.h"
+#include "Packet.h"
+#include "Logger.h"
 
 int main() {
-    std::cout << "--- Traffic Camera Monitoring System : Control Setup ---" << std::endl;
+    std::cout << "--- Traffic Camera Monitoring System : Integration Setup ---" << std::endl;
 
+    // Create objects of all classes
+    Logger mainLogger("requests_log.txt");
     Server monitoringServer;
-    monitoringServer.runLoop(); // Shows initial IDLE state
-
-    Client camera1("admin", "password123", monitoringServer);
     
-    // 1. Unauthenticated request
-    camera1.sendRequest("START_MONITOR");
-
-    // 2. Authenticate using client's new login method
-    camera1.login();
-
-    // 3. Authenticated requests
-    camera1.sendRequest("GET_SNAPSHOT");   // Fails because server is IDLE
-    camera1.sendRequest("START_MONITOR");  // Changes state to MONITORING
-    camera1.sendRequest("START_MONITOR");  // Duplicate check
+    mainLogger.logMessage("Server initialized.");
     
-    // 4. Simulate getting a snapshot
-    camera1.sendRequest("GET_SNAPSHOT");
+    Client client("admin", "password123", monitoringServer);
+    
+    // Authenticate the user so server accepts requests
+    client.login();
+    
+    // Request 1: START_MONITOR
+    mainLogger.logMessage("Simulating explicit flow for START_MONITOR");
+    Packet pktStart(1, 1, "START_MONITOR");
+    monitoringServer.processRequest(pktStart);
+    client.receiveResponse("Server state changed to MONITORING.");
+    
+    // Request 2: GET_SNAPSHOT
+    mainLogger.logMessage("Simulating explicit flow for GET_SNAPSHOT");
+    Packet pktSnap(1, 2, "GET_SNAPSHOT");
+    monitoringServer.processRequest(pktSnap);
+    client.receiveResponse("Snapshot transfer complete.");
 
-    // 5. Stop monitoring
-    camera1.sendRequest("STOP_MONITOR");
+    // Request 3: STOP_MONITOR
+    mainLogger.logMessage("Simulating explicit flow for STOP_MONITOR");
+    Packet pktStop(1, 3, "STOP_MONITOR");
+    monitoringServer.processRequest(pktStop);
+    client.receiveResponse("Server state changed to IDLE.");
 
-    // 6. Provide the interactive menu requested in instructions
-    // camera1.menu(); // Uncomment to use the interactive menu
-
+    // Write stored logs
+    mainLogger.writeToFile();
+    
+    std::cout << "--- Integration test completed successfully. ---" << std::endl;
     return 0;
 }

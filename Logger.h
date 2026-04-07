@@ -19,6 +19,9 @@ public:
     
     // Writes all buffered logs to the text file
     void writeToFile();
+    
+    // Static log method for components to use
+    static void log(const std::string& msg);
 };
 
 #endif // LOGGER_H
