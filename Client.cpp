@@ -13,25 +13,10 @@ Client::~Client() {}
 void Client::login() {
     Logger::log("Client " + username + " attempting to login.");
     if (server.authenticateUser(username, password)) {
-        std::cout << "[Client] Login successful for user: " << username << ".\n";
+        std::cout << "[+] SUCCESS: Login successful for user '" << username << "'.\n";
     } else {
-        std::cout << "[Client] Login failed.\n";
+        std::cout << "[-] ERROR: Login failed for user '" << username << "'.\n";
     }
-}
-
-void Client::selectCamera() {
-    int cameraId;
-    std::cout << "Enter Camera ID to select: ";
-    if (!(std::cin >> cameraId)) {
-        std::cin.clear();
-        std::cin.ignore(1000, '\n');
-        std::cout << "[Client] Invalid input.\n";
-        return;
-    }
-    std::cout << "[Client] Camera " << cameraId << " selected.\n";
-    
-    // Convert choice to string and test sending request
-    sendRequest("CAMERA_" + std::to_string(cameraId));
 }
 
 void Client::sendRequest(const std::string& requestStr) {
@@ -48,27 +33,35 @@ void Client::sendRequest(const std::string& requestStr) {
 
 void Client::receiveResponse(const Packet& response) {
     Logger::log("Client " + username + " received response: " + response.payload);
-    std::cout << "[Client] Server Response (Type " << response.packetType << "): " << response.payload << "\n";
+    std::cout << "    >> Server: " << response.payload << "\n";
 }
 
 void Client::menu() {
     int choice = -1;
-    while (choice != 0) {
-        std::cout << "\n=== Traffic Monitoring Client Menu ===\n"
-                  << "1. Login\n"
-                  << "2. Start Monitoring\n"
-                  << "3. Stop Monitoring\n"
-                  << "4. Get Snapshot\n"
-                  << "5. Select Camera\n"
-                  << "0. Exit\n"
-                  << "Enter choice: ";
+    while (choice != 5) {
+        std::cout << "\n========================================\n"
+                  << "    Traffic Monitoring Client System    \n"
+                  << "========================================\n"
+                  << "  1. Login\n"
+                  << "  2. Start Monitoring\n"
+                  << "  3. Stop Monitoring\n"
+                  << "  4. Get Snapshot\n"
+                  << "  5. Exit\n"
+                  << "========================================\n"
+                  << "Select an option (1-5): ";
                   
         if (!(std::cin >> choice)) {
-            // Check to avoid infinite loop from bad input
+            // Buffer clear for invalid types (e.g. letters)
             std::cin.clear();
-            std::cin.ignore(1000, '\n');
+            std::cin.ignore(10000, '\n');
+            std::cout << "\n[!] ERROR: Invalid input. Please enter a number from 1 to 5.\n";
             continue;
         }
+        
+        // Ignore any remaining trailing characters
+        std::cin.ignore(10000, '\n');
+        
+        std::cout << "\n"; // Clean spacing before action executes
         
         switch (choice) {
             case 1:
@@ -84,13 +77,10 @@ void Client::menu() {
                 sendRequest("GET_SNAPSHOT");
                 break;
             case 5:
-                selectCamera();
-                break;
-            case 0:
-                std::cout << "Exiting menu...\n";
+                std::cout << "[i] Shutting down Client System. Goodbye!\n";
                 break;
             default:
-                std::cout << "Invalid choice. Please try again.\n";
+                std::cout << "[!] ERROR: Option out of range. Please choose 1 through 5.\n";
         }
     }
 }

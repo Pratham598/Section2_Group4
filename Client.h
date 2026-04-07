@@ -14,7 +14,6 @@ public:
 
     // Required methods
     void login();
-    void selectCamera();
     void sendRequest(const std::string& requestStr);
     void receiveResponse(const Packet& response);
     
