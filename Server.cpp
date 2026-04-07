@@ -28,34 +28,36 @@ Packet Server::processRequest(const Packet& p) {
     Logger::log("Processing request: " + request);
     std::string responseStr;
 
-    if (request == "START_MONITOR") {
-        if (currentState == ServerState::IDLE) {
-            currentState = ServerState::MONITORING;
-            responseStr = "Server state changed to MONITORING.";
-        } else {
-            responseStr = "Server is already monitoring.";
-        }
-    } else if (request == "STOP_MONITOR") {
-        if (currentState == ServerState::MONITORING) {
-            currentState = ServerState::IDLE;
-            responseStr = "Server state changed to IDLE.";
-        } else {
-            responseStr = "Server is already idle.";
-        }
-    } else if (request == "GET_SNAPSHOT") {
-        if (currentState == ServerState::MONITORING) {
-            responseStr = "Snapshot transfer complete.";
-        } else {
-            responseStr = "Cannot get snapshot. Server is not in MONITORING state.";
-        }
-    } else if (request.length() >= 7 && request.substr(0, 7) == "CAMERA_") {
-        currentState = ServerState::MONITORING;
-        responseStr = request + "_STREAM_START";
-    } else {
-        responseStr = "Unknown request: " + request;
+    // State Machine Implementation
+    switch (currentState) {
+        case ServerState::IDLE:
+            if (request == "START_MONITOR") {
+                currentState = ServerState::MONITORING;
+                responseStr = "Server state changed to MONITORING.";
+            } else if (request == "STOP_MONITOR" || request == "GET_SNAPSHOT") {
+                responseStr = "Error: Rejected invalid action '" + request + "' in IDLE state.";
+            } else {
+                responseStr = "Error: Unknown request '" + request + "'.";
+            }
+            break;
+
+        case ServerState::MONITORING:
+            if (request == "STOP_MONITOR") {
+                currentState = ServerState::IDLE;
+                responseStr = "Server state changed to IDLE.";
+            } else if (request == "START_MONITOR") {
+                responseStr = "Error: Rejected invalid action. Server is already MONITORING.";
+            } else if (request == "GET_SNAPSHOT") {
+                responseStr = "Snapshot transfer complete.";
+            } else if (request.length() >= 7 && request.substr(0, 7) == "CAMERA_") {
+                responseStr = request + "_STREAM_START";
+            } else {
+                responseStr = "Error: Unknown request '" + request + "'.";
+            }
+            break;
     }
 
-    manageState();
+    manageState(); // Prints current state for debugging
     Logger::log("[RESPONSE] " + responseStr);
     
     // Return a response packet (type 2 to denote server response)
