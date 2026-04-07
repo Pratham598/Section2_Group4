@@ -8,14 +8,22 @@ class Server; // Forward declaration
 
 class Client {
 public:
-    Client(int id, Server& server);
+    // Attributes
+    Client(const std::string& username, const std::string& password, Server& server);
     ~Client();
 
-    void sendRequest(const std::string& request);
-    int getId() const;
+    // Required methods
+    void login();
+    void selectCamera();
+    void sendRequest(const std::string& requestStr);
+    void receiveResponse(const std::string& response);
+    
+    // Menu
+    void menu();
 
 private:
-    int id;
+    std::string username;
+    std::string password;
     Server& server;
 };
 
