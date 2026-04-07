@@ -1,6 +1,5 @@
 #include "Server.h"
 #include "Logger.h"
-#include <iostream>
 
 Server::Server() : currentState(ServerState::IDLE), isAuthenticated(false) {
     Logger::log("Server initialized in IDLE state.");
@@ -19,44 +18,46 @@ bool Server::authenticateUser(const std::string& username, const std::string& pa
     return false;
 }
 
-void Server::processRequest(const Packet& p) {
+std::string Server::processRequest(const Packet& p) {
     if (!isAuthenticated) {
         Logger::log("Unauthorized request. Please authenticate first.");
-        return;
+        return "Unauthorized request.";
     }
 
     std::string request = p.payload;
     Logger::log("Processing request: " + request);
+    std::string response;
 
     if (request == "START_MONITOR") {
         if (currentState == ServerState::IDLE) {
             currentState = ServerState::MONITORING;
-            sendResponse("Server state changed to MONITORING.");
-            manageState();
+            response = "Server state changed to MONITORING.";
         } else {
-            sendResponse("Server is already monitoring.");
+            response = "Server is already monitoring.";
         }
     } else if (request == "STOP_MONITOR") {
         if (currentState == ServerState::MONITORING) {
             currentState = ServerState::IDLE;
-            sendResponse("Server state changed to IDLE.");
-            manageState();
+            response = "Server state changed to IDLE.";
         } else {
-            sendResponse("Server is already idle.");
+            response = "Server is already idle.";
         }
     } else if (request == "GET_SNAPSHOT") {
         if (currentState == ServerState::MONITORING) {
-            Logger::log("Generating snapshot...");
-            for (int i = 1; i <= 3; ++i) {
-                sendResponse("Sending image chunk " + std::to_string(i) + "/3...");
-            }
-            sendResponse("Snapshot transfer complete.");
+            response = "Snapshot transfer complete.";
         } else {
-            sendResponse("Cannot get snapshot. Server is not in MONITORING state.");
+            response = "Cannot get snapshot. Server is not in MONITORING state.";
         }
+    } else if (request.length() >= 7 && request.substr(0, 7) == "CAMERA_") {
+        currentState = ServerState::MONITORING;
+        response = request + "_STREAM_START";
     } else {
-        sendResponse("Unknown request: " + request);
+        response = "Unknown request: " + request;
     }
+
+    manageState();
+    Logger::log("[RESPONSE] " + response);
+    return response;
 }
 
 void Server::manageState() {
@@ -68,13 +69,4 @@ void Server::manageState() {
             Logger::log("[STATE] Server is currently MONITORING traffic cameras.");
             break;
     }
-}
-
-void Server::sendResponse(const std::string& response) {
-    Logger::log("[RESPONSE] " + response);
-}
-
-void Server::runLoop() {
-    Logger::log("Starting server simulation loop...");
-    manageState();
 }

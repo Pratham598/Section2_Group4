@@ -7,7 +7,6 @@ class Packet {
 public:
     int packetType;
     int sequenceNumber;
-    int payloadSize;
     std::string payload;
 
     // Constructors

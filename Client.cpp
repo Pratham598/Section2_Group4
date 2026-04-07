@@ -22,11 +22,16 @@ void Client::login() {
 void Client::selectCamera() {
     int cameraId;
     std::cout << "Enter Camera ID to select: ";
-    std::cin >> cameraId;
+    if (!(std::cin >> cameraId)) {
+        std::cin.clear();
+        std::cin.ignore(1000, '\n');
+        std::cout << "[Client] Invalid input.\n";
+        return;
+    }
     std::cout << "[Client] Camera " << cameraId << " selected.\n";
     
     // Convert choice to string and test sending request
-    sendRequest("SELECT_CAMERA_" + std::to_string(cameraId));
+    sendRequest("CAMERA_" + std::to_string(cameraId));
 }
 
 void Client::sendRequest(const std::string& requestStr) {
@@ -35,8 +40,9 @@ void Client::sendRequest(const std::string& requestStr) {
     // Create Packet object to send requests
     Packet packet(1, 1, requestStr); 
     
-    // Simulate communication with Server class
-    server.processRequest(packet);
+    // Send request to Server and receive response
+    std::string response = server.processRequest(packet);
+    receiveResponse(response);
 }
 
 void Client::receiveResponse(const std::string& response) {

@@ -15,12 +15,8 @@ public:
     ~Server();
 
     bool authenticateUser(const std::string& username, const std::string& password);
-    void processRequest(const Packet& p);
+    std::string processRequest(const Packet& p);
     void manageState();
-    void sendResponse(const std::string& response);
-
-    // Simple loop method to simulate the server running
-    void runLoop();
 
 private:
     ServerState currentState;
