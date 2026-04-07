@@ -10,9 +10,10 @@ Packet::Packet(int type, int seqNum, const std::string& data)
 
 // Encodes the packet into a string containing the header and payload
 std::string Packet::encode() const {
-    // Header format: Type|SeqNum|
+    // Header format: Type|SeqNum|PayloadSize|
     return std::to_string(packetType) + "|" +
            std::to_string(sequenceNumber) + "|" +
+           std::to_string(payload.length()) + "|" +
            payload;
 }
 
@@ -25,6 +26,12 @@ void Packet::decode(const std::string& data) {
     nextPos = data.find('|', pos);
     if (nextPos == std::string::npos) throw std::invalid_argument("Invalid packet: missing packetType");
     packetType = std::stoi(data.substr(pos, nextPos - pos));
+    
+    // Validate packetType
+    if (packetType < 1 || packetType > 4) {
+        throw std::invalid_argument("Invalid packet: unknown packetType");
+    }
+    
     pos = nextPos + 1;
 
     // Extract sequenceNumber
@@ -33,10 +40,21 @@ void Packet::decode(const std::string& data) {
     sequenceNumber = std::stoi(data.substr(pos, nextPos - pos));
     pos = nextPos + 1;
 
+    // Extract payloadSize
+    nextPos = data.find('|', pos);
+    if (nextPos == std::string::npos) throw std::invalid_argument("Invalid packet: missing payload size");
+    int expectedPayloadSize = std::stoi(data.substr(pos, nextPos - pos));
+    pos = nextPos + 1;
+
     // Remaining string is the payload
     if (pos < data.length()) {
         payload = data.substr(pos);
     } else {
         payload = "";
+    }
+    
+    // Validate payload size
+    if (payload.length() != expectedPayloadSize) {
+        throw std::invalid_argument("Invalid packet: payload size mismatch");
     }
 }
