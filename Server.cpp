@@ -19,9 +19,13 @@ bool Server::authenticateUser(const std::string& username, const std::string& pa
 }
 
 Packet Server::processRequest(const Packet& p) {
+    Logger::logPacket("REQ", p);
+    
     if (!isAuthenticated) {
         Logger::log("Unauthorized request. Please authenticate first.");
-        return Packet(2, p.sequenceNumber, "Unauthorized request.");
+        Packet response(2, p.sequenceNumber, "Unauthorized request.");
+        Logger::logPacket("RES", response);
+        return response;
     }
 
     std::string request = p.payload;
@@ -61,7 +65,9 @@ Packet Server::processRequest(const Packet& p) {
     Logger::log("[RESPONSE] " + responseStr);
     
     // Return a response packet (type 2 to denote server response)
-    return Packet(2, p.sequenceNumber, responseStr);
+    Packet response(2, p.sequenceNumber, responseStr);
+    Logger::logPacket("RES", response);
+    return response;
 }
 
 void Server::manageState() {

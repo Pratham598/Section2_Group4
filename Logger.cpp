@@ -58,3 +58,10 @@ void Logger::log(const std::string& msg) {
     sysLogger.logMessage(msg);
     sysLogger.writeToFile();
 }
+
+void Logger::logPacket(const std::string& direction, const Packet& p) {
+    static Logger packetLogger("log.txt");
+    std::string msgDetails = "[" + direction + "] Type=" + std::to_string(p.packetType) + ", Size=" + std::to_string(p.payloadSize);
+    packetLogger.logMessage(msgDetails);
+    packetLogger.writeToFile();
+}

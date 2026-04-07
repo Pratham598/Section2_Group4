@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "Packet.h"
 
 class Logger {
 private:
@@ -22,6 +23,9 @@ public:
     
     // Static log method for components to use
     static void log(const std::string& msg);
+    
+    // Logs a specific packet transaction with direction (REQ/RES)
+    static void logPacket(const std::string& direction, const Packet& p);
 };
 
 #endif // LOGGER_H
