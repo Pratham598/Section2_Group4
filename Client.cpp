@@ -77,6 +77,12 @@ void Client::menu() {
                   << "Select an option (1-5): ";
                   
         if (!(std::cin >> choice)) {
+            // Check for End-Of-File (e.g. Ctrl+D) to prevent infinite loops
+            if (std::cin.eof()) {
+                std::cout << "\n[i] Input stream closed. Shutting down Client System. Goodbye!\n";
+                break;
+            }
+            
             // Buffer clear for invalid types (e.g. letters)
             std::cin.clear();
             std::cin.ignore(10000, '\n');

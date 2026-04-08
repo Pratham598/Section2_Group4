@@ -22,39 +22,43 @@ void Packet::decode(const std::string& data) {
     size_t pos = 0;
     size_t nextPos = 0;
 
-    // Extract packetType
-    nextPos = data.find('|', pos);
-    if (nextPos == std::string::npos) throw std::invalid_argument("Invalid packet: missing packetType");
-    packetType = std::stoi(data.substr(pos, nextPos - pos));
-    
-    // Validate packetType
-    if (packetType < 1 || packetType > 4) {
-        throw std::invalid_argument("Invalid packet: unknown packetType");
-    }
-    
-    pos = nextPos + 1;
+    try {
+        // Extract packetType
+        nextPos = data.find('|', pos);
+        if (nextPos == std::string::npos) throw std::invalid_argument("Invalid packet: missing packetType");
+        packetType = std::stoi(data.substr(pos, nextPos - pos));
+        
+        // Validate packetType
+        if (packetType < 1 || packetType > 4) {
+            throw std::invalid_argument("Invalid packet: unknown packetType");
+        }
+        
+        pos = nextPos + 1;
 
-    // Extract sequenceNumber
-    nextPos = data.find('|', pos);
-    if (nextPos == std::string::npos) throw std::invalid_argument("Invalid packet: missing sequenceNumber");
-    sequenceNumber = std::stoi(data.substr(pos, nextPos - pos));
-    pos = nextPos + 1;
+        // Extract sequenceNumber
+        nextPos = data.find('|', pos);
+        if (nextPos == std::string::npos) throw std::invalid_argument("Invalid packet: missing sequenceNumber");
+        sequenceNumber = std::stoi(data.substr(pos, nextPos - pos));
+        pos = nextPos + 1;
 
-    // Extract payloadSize
-    nextPos = data.find('|', pos);
-    if (nextPos == std::string::npos) throw std::invalid_argument("Invalid packet: missing payload size");
-    int expectedPayloadSize = std::stoi(data.substr(pos, nextPos - pos));
-    pos = nextPos + 1;
+        // Extract payloadSize
+        nextPos = data.find('|', pos);
+        if (nextPos == std::string::npos) throw std::invalid_argument("Invalid packet: missing payload size");
+        int expectedPayloadSize = std::stoi(data.substr(pos, nextPos - pos));
+        pos = nextPos + 1;
 
-    // Remaining string is the payload
-    if (pos < data.length()) {
-        payload = data.substr(pos);
-    } else {
-        payload = "";
-    }
-    
-    // Validate payload size
-    if (payload.length() != expectedPayloadSize) {
-        throw std::invalid_argument("Invalid packet: payload size mismatch");
+        // Remaining string is the payload
+        if (pos < data.length()) {
+            payload = data.substr(pos);
+        } else {
+            payload = "";
+        }
+        
+        // Validate payload size accurately
+        if (expectedPayloadSize < 0 || payload.length() != static_cast<size_t>(expectedPayloadSize)) {
+            throw std::invalid_argument("Invalid packet: payload size mismatch");
+        }
+    } catch (const std::exception& e) {
+        throw std::invalid_argument(std::string("Packet decoding error: ") + e.what());
     }
 }
