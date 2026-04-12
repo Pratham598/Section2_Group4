@@ -1,41 +1,53 @@
-#include <iostream>
 #include "Server.h"
-#include "Client.h"
-#include "Logger.h"
+#include "Packet.h"
+#include <chrono>
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <string>
+#include <exception>
 
 int main() {
-    std::cout << "--- Traffic Camera Monitoring System : Integration Setup ---\n" << std::endl;
+  // VERY FIRST LINE DEBUG PRINT
+  std::cout << "SERVER STARTED" << std::endl;
+  
+  // Sleep before entering the main logic or initializing objects to confirm execution
+  std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    // Create objects of all classes
-    Logger mainLogger("requests_log.txt");
-    Server monitoringServer;
-    
-    mainLogger.logMessage("Server initialized.");
-    
-    Client client("admin", "password123", monitoringServer);
-    
-    // Authenticate the user so server accepts requests
-    client.login();
-    
-    // Request 1: START_MONITOR
-    mainLogger.logMessage("Simulating explicit flow for START_MONITOR");
-    client.sendRequest("START_MONITOR");
-    
-    // Request 2: GET_SNAPSHOT
-    mainLogger.logMessage("Simulating explicit flow for GET_SNAPSHOT");
-    client.sendRequest("GET_SNAPSHOT");
+  try {
+      Server server;
+      server.authenticateUser("admin", "password123");
 
-    // Request 3: STOP_MONITOR
-    mainLogger.logMessage("Simulating explicit flow for STOP_MONITOR");
-    client.sendRequest("STOP_MONITOR");
+      std::vector<std::string> requests = {"START_MONITOR", "GET_SNAPSHOT", "STOP_MONITOR"};
+      int index = 0;
+      int seq = 1;
 
-    // Request 4: CAMERA_1 (testing the new logic)
-    mainLogger.logMessage("Simulating explicit flow for CAMERA_1");
-    client.sendRequest("CAMERA_1");
+      while (true) {
+        std::cout << "[SERVER] Waiting for requests..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    // Write stored logs
-    mainLogger.writeToFile();
-    
-    std::cout << "--- Integration test completed successfully. ---\n" << std::endl;
-    return 0;
+        std::string currentRequest = requests[index % requests.size()];
+        std::cout << "[SERVER] Received request: " << currentRequest << std::endl;
+
+        Packet req(1, seq++, currentRequest);
+        server.processRequest(req);
+
+        if (currentRequest == "START_MONITOR") {
+          std::cout << "[SERVER] State changed to MONITORING" << std::endl;
+        } else if (currentRequest == "GET_SNAPSHOT") {
+          std::cout << "[SERVER] Snapshot request processed." << std::endl;
+        } else if (currentRequest == "STOP_MONITOR") {
+          std::cout << "[SERVER] State changed to IDLE" << std::endl;
+        }
+
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        index++;
+      }
+  } catch (const std::exception& e) {
+      std::cout << "[FATAL ERROR] " << e.what() << std::endl;
+  } catch (...) {
+      std::cout << "[FATAL ERROR] Unknown crash!" << std::endl;
+  }
+
+  return 0;
 }
