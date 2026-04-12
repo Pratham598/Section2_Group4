@@ -12,12 +12,11 @@ Logger::Logger(const std::string& logFilename) : filename(logFilename) {
 std::string Logger::getCurrentTimestamp() {
     auto now = std::chrono::system_clock::now();
     std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-    std::tm* local_tm = std::localtime(&now_time);
+    tm ltm; 
+    localtime_s(&ltm, &now_time);
     
     std::stringstream ss;
-    if (local_tm) {
-        ss << std::put_time(local_tm, "%Y-%m-%d %H:%M:%S");
-    }
+    ss << std::put_time(&ltm, "%Y-%m-%d %H:%M:%S");
     return ss.str();
 }
 
