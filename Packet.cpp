@@ -9,7 +9,8 @@ Packet::Packet(int type, int seqNum, const std::string& data)
     : packetType(type), sequenceNumber(seqNum), payload(data) {}
 
 // Encodes the packet into a string containing the header and payload
-std::string Packet::encode() const {
+std::string Packet::encode() const 
+{
     // Header format: Type|SeqNum|PayloadSize|
     return std::to_string(packetType) + "|" +
            std::to_string(sequenceNumber) + "|" +
@@ -18,7 +19,8 @@ std::string Packet::encode() const {
 }
 
 // Decodes the string back into Packet fields
-void Packet::decode(const std::string& data) {
+void Packet::decode(const std::string& data)
+ {
     size_t pos = 0;
     size_t nextPos = 0;
 
@@ -29,7 +31,8 @@ void Packet::decode(const std::string& data) {
         packetType = std::stoi(data.substr(pos, nextPos - pos));
         
         // Validate packetType
-        if (packetType < 1 || packetType > 4) {
+        if (packetType < 1 || packetType > 4) 
+        {
             throw std::invalid_argument("Invalid packet: unknown packetType");
         }
         
@@ -48,17 +51,21 @@ void Packet::decode(const std::string& data) {
         pos = nextPos + 1;
 
         // Remaining string is the payload
-        if (pos < data.length()) {
+        if (pos < data.length()) 
+        {
             payload = data.substr(pos);
-        } else {
+        } else 
+        {
             payload = "";
         }
         
         // Validate payload size accurately
-        if (expectedPayloadSize < 0 || payload.length() != static_cast<size_t>(expectedPayloadSize)) {
+        if (expectedPayloadSize < 0 || payload.length() != static_cast<size_t>(expectedPayloadSize)) 
+        {
             throw std::invalid_argument("Invalid packet: payload size mismatch");
         }
-    } catch (const std::exception& e) {
+    } catch (const std::exception& e) 
+    {
         throw std::invalid_argument(std::string("Packet decoding error: ") + e.what());
     }
 }
