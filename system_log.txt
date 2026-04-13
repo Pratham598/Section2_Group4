@@ -1,0 +1,29 @@
+[2026-04-12 02:38:35] Server initialized in IDLE state.
+[2026-04-12 02:38:35] Client admin created.
+[2026-04-12 02:38:35] Client admin attempting to login.
+[2026-04-12 02:38:35] Authenticating user: admin
+[2026-04-12 02:38:35] Authentication successful.
+[2026-04-12 02:38:35] Client admin sending request: START_MONITOR
+[2026-04-12 02:38:35] Processing request: START_MONITOR
+[2026-04-12 02:38:35] [STATE] Server is currently MONITORING traffic cameras.
+[2026-04-12 02:38:35] [RESPONSE 1/1] Server state changed to MONITORING.
+[2026-04-12 02:38:35] Client admin received response: Server state changed to MONITORING.
+[2026-04-12 02:38:35] Client admin sending request: GET_SNAPSHOT
+[2026-04-12 02:38:35] Processing request: GET_SNAPSHOT
+[2026-04-12 02:38:35] [STATE] Server is currently MONITORING traffic cameras.
+[2026-04-12 02:38:35] [RESPONSE 1/3] CHUNK:1/3:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX... [TRUNCATED FOR LOGGING]
+[2026-04-12 02:38:35] [RESPONSE 2/3] CHUNK:2/3:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX... [TRUNCATED FOR LOGGING]
+[2026-04-12 02:38:35] [RESPONSE 3/3] CHUNK:3/3:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX... [TRUNCATED FOR LOGGING]
+[2026-04-12 02:38:35] Client admin received response: Snapshot fully assembled (1500000 simulated bytes).
+[2026-04-12 02:38:35] Client admin sending request: STOP_MONITOR
+[2026-04-12 02:38:35] Processing request: STOP_MONITOR
+[2026-04-12 02:38:35] [STATE] Server is currently IDLE. Waiting for commands.
+[2026-04-12 02:38:35] [RESPONSE 1/1] Server state changed to IDLE.
+[2026-04-12 02:38:35] Client admin received response: Server state changed to IDLE.
+[2026-04-12 02:38:35] Client admin sending request: CAMERA_1
+[2026-04-12 02:38:35] Processing request: CAMERA_1
+[2026-04-12 02:38:35] [STATE] Server is currently IDLE. Waiting for commands.
+[2026-04-12 02:38:35] [RESPONSE 1/1] Error: Unknown request 'CAMERA_1'.
+[2026-04-12 02:38:35] Client admin received response: Error: Unknown request 'CAMERA_1'.
+[2026-04-12 02:59:40] Server initialized in IDLE state.
+[2026-04-12 02:59:40] Client admin created.

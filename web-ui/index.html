@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traffic Camera Monitoring System</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header class="app-header">
         <h1>Traffic Camera Monitoring System</h1>
-        
+
         <div id="system-info" class="system-info hidden">
             <span id="display-user">User: admin</span>
             <span>System Status: <span class="status-running">Running</span></span>
@@ -39,7 +41,9 @@
         <div id="register-section" class="modal-card hidden">
             <button class="modal-close" id="reg-close">&times;</button>
             <h2>Create Account</h2>
-            <div id="register-message" style="display: none; font-size: 13px; font-weight: 500; text-align: center; margin-bottom: 16px;"></div>
+            <div id="register-message"
+                style="display: none; font-size: 13px; font-weight: 500; text-align: center; margin-bottom: 16px;">
+            </div>
             <div class="input-group">
                 <label for="reg-username">Username</label>
                 <input type="text" id="reg-username" placeholder="Choose a username">
@@ -58,7 +62,9 @@
         <div id="forgot-password-section" class="modal-card hidden">
             <button class="modal-close" id="forgot-close">&times;</button>
             <h2>Reset Password</h2>
-            <div id="forgot-message" style="display: none; font-size: 13px; font-weight: 500; text-align: center; margin-bottom: 16px;"></div>
+            <div id="forgot-message"
+                style="display: none; font-size: 13px; font-weight: 500; text-align: center; margin-bottom: 16px;">
+            </div>
             <div class="input-group">
                 <label for="forgot-input">Email or Username</label>
                 <input type="text" id="forgot-input" placeholder="Enter account email or username">
@@ -67,7 +73,7 @@
         </div>
 
         <div id="monitoring-section" class="dashboard-layout hidden">
-            
+
             <div class="dashboard-card">
                 <div class="video-placeholder">
                     <div id="camera-status" class="status-indicator offline">
@@ -75,7 +81,7 @@
                         <span class="status-text">Camera Offline</span>
                     </div>
                 </div>
-                
+
                 <div class="controls">
                     <button id="start-btn" class="btn btn-primary">Start Monitoring</button>
                     <button id="stop-btn" class="btn btn-secondary" disabled>Stop Monitoring</button>
@@ -102,4 +108,5 @@
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>

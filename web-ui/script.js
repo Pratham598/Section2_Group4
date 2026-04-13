@@ -49,7 +49,7 @@ function addLog(message, type = 'info') {
     logElement.className = `log-entry ${type}`;
     logElement.textContent = `[${timestamp}] ${message}`;
     logsContainer.appendChild(logElement);
-    
+
     // Auto-scroll to bottom
     logsContainer.scrollTop = logsContainer.scrollHeight;
 }
@@ -70,7 +70,7 @@ function updateUIState() {
         startBtn.disabled = false;
         stopBtn.disabled = true;
         snapshotBtn.disabled = true;
-        
+
         // Hide snapshot preview on idle
         snapshotPreviewContainer.classList.add('hidden');
     }
@@ -85,10 +85,10 @@ loginBtn.addEventListener('click', () => {
         addLog('Login successful', 'success');
         loginSection.classList.add('hidden');
         monitoringSection.classList.remove('hidden');
-        
+
         displayUser.textContent = `User: ${username}`;
         systemInfo.classList.remove('hidden');
-        
+
         // Initialize the UI with default state
         updateUIState();
     } else {
@@ -139,7 +139,7 @@ registerSubmitBtn.addEventListener('click', () => {
         registerMessage.textContent = 'Please fill in all fields.';
         return;
     }
-    
+
     if (pass !== conf) {
         registerMessage.style.display = 'block';
         registerMessage.style.color = 'var(--error-color)';
@@ -151,7 +151,7 @@ registerSubmitBtn.addEventListener('click', () => {
     registerMessage.style.display = 'block';
     registerMessage.style.color = '#28a745';
     registerMessage.textContent = 'Account created successfully';
-    
+
     // Automatically hide modal without disturbing base view
     setTimeout(() => {
         registerSection.classList.add('hidden');
@@ -188,7 +188,7 @@ forgotSubmitBtn.addEventListener('click', () => {
     forgotMessage.style.display = 'block';
     forgotMessage.style.color = '#28a745';
     forgotMessage.textContent = 'Password reset link sent';
-    
+
     setTimeout(() => {
         forgotPasswordSection.classList.add('hidden');
         modalOverlay.classList.add('hidden');
@@ -197,60 +197,81 @@ forgotSubmitBtn.addEventListener('click', () => {
 
 // Handle Start Monitoring
 startBtn.addEventListener('click', () => {
-    // Only allow if IDLE
-    if (currentState !== STATE_IDLE) {
-        addLog('Error: Invalid action. System is already in MONITORING state.', 'error');
-        return;
-    }
+    addLog('Request sent to server: START_MONITOR', 'info');
     
-    currentState = STATE_MONITORING;
-    updateUIState();
-    addLog('Server state changed to MONITORING', 'info');
+    fetch("http://127.0.0.1:8080/start")
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'MONITORING') {
+                currentState = STATE_MONITORING;
+                updateUIState();
+                addLog('Server state changed to MONITORING', 'success');
+            } else {
+                addLog('Server error: ' + (data.message || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            addLog('Failed to connect to server. Ensure C++ server is running on port 8080.', 'error');
+            console.error('Error:', error);
+        });
 });
 
 // Handle Stop Monitoring
 stopBtn.addEventListener('click', () => {
-    // Only allow if MONITORING
-    if (currentState !== STATE_MONITORING) {
-        addLog('Error: Invalid action. System is already in IDLE state.', 'error');
-        return;
-    }
+    addLog('Request sent to server: STOP_MONITOR', 'info');
     
-    currentState = STATE_IDLE;
-    updateUIState();
-    addLog('Server state changed to IDLE', 'info');
+    fetch("http://127.0.0.1:8080/stop")
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'IDLE') {
+                currentState = STATE_IDLE;
+                updateUIState();
+                addLog('Server state changed to IDLE', 'success');
+            } else {
+                addLog('Server error: ' + (data.message || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            addLog('Failed to connect to server.', 'error');
+            console.error('Error:', error);
+        });
 });
 
 // Handle Snapshot
 snapshotBtn.addEventListener('click', () => {
-    // Only allow if MONITORING
-    if (currentState !== STATE_MONITORING) {
-        addLog('Error: Cannot take a snapshot while system is in IDLE state.', 'error');
-        return;
-    }
+    addLog('Request sent to server: GET_SNAPSHOT', 'info');
     
     snapshotBtn.disabled = true;
-    
     snapshotPreviewContainer.classList.remove('hidden');
-    snapshotStatusText.textContent = 'Receiving chunks...';
-    snapshotBox.style.backgroundColor = '#fafafa';
-    
-    addLog('Receiving chunks...', 'info');
-    
-    setTimeout(() => {
-        addLog('Snapshot fully assembled', 'success');
-        
-        snapshotStatusText.textContent = 'Snapshot fully assembled';
-        
-        // Inject physical image into view cleanly bounding via background properties mapped to the 21:9 container
-        snapshotBox.style.backgroundImage = 'url("camera_feed_sample.png")';
-        snapshotBox.style.backgroundSize = 'cover';
-        snapshotBox.style.backgroundPosition = 'center';
-        snapshotBox.textContent = ''; // Clear prior empty placeholder
-        
-        // Re-enable if still monitoring
-        if (currentState === STATE_MONITORING) {
+    snapshotStatusText.textContent = 'Requesting snapshot...';
+    snapshotBox.style.backgroundImage = 'none';
+    snapshotBox.style.backgroundColor = '#f0f0f0';
+    snapshotBox.textContent = '...';
+
+    fetch("http://127.0.0.1:8080/snapshot")
+        .then(response => response.json())
+        .then(data => {
+            addLog('Receiving snapshot data...', 'info');
+            
+            setTimeout(() => {
+                addLog('Snapshot fully assembled', 'success');
+                snapshotStatusText.textContent = 'Snapshot fully assembled';
+                
+                const imagePath = data.image || "camera_feed_sample.png";
+                snapshotBox.style.backgroundImage = `url("${imagePath}")`;
+                snapshotBox.style.backgroundSize = 'cover';
+                snapshotBox.style.backgroundPosition = 'center';
+                snapshotBox.textContent = '';
+                
+                if (currentState === STATE_MONITORING) {
+                    snapshotBtn.disabled = false;
+                }
+            }, 800);
+        })
+        .catch(error => {
+            addLog('Failed to get snapshot.', 'error');
+            snapshotStatusText.textContent = 'Error assembling snapshot';
             snapshotBtn.disabled = false;
-        }
-    }, 1500);
+            console.error('Error:', error);
+        });
 });

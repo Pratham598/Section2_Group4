@@ -1,0 +1,5 @@
+[2026-04-12 02:38:35] Server initialized.
+[2026-04-12 02:38:35] Simulating explicit flow for START_MONITOR
+[2026-04-12 02:38:35] Simulating explicit flow for GET_SNAPSHOT
+[2026-04-12 02:38:35] Simulating explicit flow for STOP_MONITOR
+[2026-04-12 02:38:35] Simulating explicit flow for CAMERA_1
